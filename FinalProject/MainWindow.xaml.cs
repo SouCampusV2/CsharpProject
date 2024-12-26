@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -82,7 +83,6 @@ namespace FinalProject
                 return;
             }
 
-            // Получение выбранного цвета
             var selectedColorItem = CardColorPicker.SelectedItem as ComboBoxItem;
             if (selectedColorItem == null)
             {
@@ -90,18 +90,15 @@ namespace FinalProject
                 return;
             }
 
-            // Используем Tag вместо Content
             string selectedColor = selectedColorItem.Tag.ToString();
             var color = (Color)ColorConverter.ConvertFromString(selectedColor);
 
-            // Создаем карточку
             var card = new Card
             {
                 Text = cardText,
                 BackgroundColor = new SolidColorBrush(color),
             };
 
-            // Найдем активную колонку (например, первую)
             var activeColumn = ColumnsGrid.Children.OfType<ListBox>().FirstOrDefault();
             if (activeColumn != null)
             {
@@ -112,7 +109,6 @@ namespace FinalProject
                 MessageBox.Show("Нет доступных колонок для добавления карточки.");
             }
 
-            // Очистка ввода
             CardInput.Clear();
         }
 
@@ -125,13 +121,12 @@ namespace FinalProject
                 {
                     var data = new DataObject();
                     data.SetData(typeof(Card), listBox.SelectedItem);
-                    data.SetData("SourceListBox", listBox); // Передаём исходный ListBox
+                    data.SetData("SourceListBox", listBox);
 
                     DragDrop.DoDragDrop(listBox, data, DragDropEffects.Move);
                 }
             }
         }
-
 
         private void Group_DragOver(object sender, DragEventArgs e)
         {
@@ -148,35 +143,99 @@ namespace FinalProject
 
                 if (card != null && targetListBox != null)
                 {
-                    // Получаем исходный ListBox через e.Data
                     var sourceListBox = e.Data.GetData("SourceListBox") as ListBox;
 
-                    if (sourceListBox != null)
+                    if (sourceListBox != null && !ReferenceEquals(sourceListBox, targetListBox))
                     {
-                        // Удаляем карточку из источника, только если исходный ListBox не является целевым
-                        if (!ReferenceEquals(sourceListBox, targetListBox))
-                        {
-                            sourceListBox.Items.Remove(card);
-                        }
+                        sourceListBox.Items.Remove(card);
                     }
 
-                    // Добавляем карточку в целевой ListBox, только если её ещё нет
                     if (!targetListBox.Items.Contains(card))
                     {
                         targetListBox.Items.Add(card);
                     }
 
-                    // Останавливаем дальнейшую обработку события
                     e.Handled = true;
                 }
             }
         }
 
+        private void DeleteCardMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem)
+            {
+                var contextMenu = menuItem.Parent as ContextMenu;
+                var border = contextMenu?.PlacementTarget as Border;
+
+                if (border != null)
+                {
+                    var card = border.DataContext as Card;
+                    if (card != null)
+                    {
+                        var parentListBox = FindParent<ListBox>(border);
+                        parentListBox?.Items.Remove(card);
+                    }
+                }
+            }
+        }
+
+        private void ChangeColorMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem menuItem)
+            {
+                var contextMenu = menuItem.Parent as ContextMenu;
+                var border = contextMenu?.PlacementTarget as Border;
+
+                if (border != null)
+                {
+                    var card = border.DataContext as Card;
+                    if (card != null)
+                    {
+                        var random = new Random();
+                        var color = Color.FromRgb(
+                            (byte)random.Next(0, 256),
+                            (byte)random.Next(0, 256),
+                            (byte)random.Next(0, 256)
+                        );
+                        card.BackgroundColor = new SolidColorBrush(color);
+                    }
+                }
+            }
+        }
+
+        private T FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            var parent = VisualTreeHelper.GetParent(child);
+            if (parent == null) return null;
+            if (parent is T parentAsT) return parentAsT;
+            return FindParent<T>(parent);
+        }
     }
 
-    public class Card
+    public class Card : INotifyPropertyChanged
     {
+        private SolidColorBrush _backgroundColor;
+
         public string Text { get; set; }
-        public SolidColorBrush BackgroundColor { get; set; }
+
+        public SolidColorBrush BackgroundColor
+        {
+            get => _backgroundColor;
+            set
+            {
+                if (_backgroundColor != value)
+                {
+                    _backgroundColor = value;
+                    OnPropertyChanged(nameof(BackgroundColor));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
