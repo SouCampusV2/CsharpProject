@@ -1,0 +1,50 @@
+{
+  "Columns": [
+    {
+      "Title": "Need to do",
+      "BackgroundColor": "#FFFFEBEE",
+      "Cards": [
+        {
+          "Title": "English 12",
+          "BackgroundColor": "#FFADD8E6"
+        },
+        {
+          "Title": "Literature test",
+          "BackgroundColor": "#FFADD8E6"
+        },
+        {
+          "Title": "home cleaning",
+          "BackgroundColor": "#FF90EE90"
+        },
+        {
+          "Title": "visit friends",
+          "BackgroundColor": "#FFF08080"
+        }
+      ]
+    },
+    {
+      "Title": "Doing",
+      "BackgroundColor": "#FFFFEBEE",
+      "Cards": [
+        {
+          "Title": "Literature 10",
+          "BackgroundColor": "#FFADD8E6"
+        },
+        {
+          "Title": "buy sofa",
+          "BackgroundColor": "#FF90EE90"
+        }
+      ]
+    },
+    {
+      "Title": "Done",
+      "BackgroundColor": "#FFFFEBEE",
+      "Cards": [
+        {
+          "Title": "buy house",
+          "BackgroundColor": "#FF90EE90"
+        }
+      ]
+    }
+  ]
+}

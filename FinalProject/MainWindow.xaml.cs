@@ -13,9 +13,58 @@ namespace FinalProject
     {
         public MainWindow()
         {
-            InitializeComponent();  
-        }
+            InitializeComponent();
+            // Загружаем состояние из файла
+            var appState = AppState.LoadState("appState.json");
 
+            // Восстанавливаем колонки и карточки
+            foreach (var column in appState.Columns)
+            {
+                var columnGrid = CreateColumn(column.Title);
+                var listBox = (ListBox)columnGrid.Children[1]; // Получаем ListBox из колонки
+                foreach (var card in column.Cards)
+                {
+                    var cardElement = CreateCard(card.Title, card.BackgroundColor);
+                    listBox.Items.Add(cardElement);
+                }
+
+                ColumnsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                Grid.SetColumn(columnGrid, ColumnsGrid.ColumnDefinitions.Count - 1);
+                ColumnsGrid.Children.Add(columnGrid);
+            }
+        }
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            base.OnClosing(e);
+
+            var appState = new AppState();
+
+            // Собираем текущие колонки и карточки
+            foreach (var child in ColumnsGrid.Children)
+            {
+                if (child is Grid columnGrid)
+                {
+                    var title = ((TextBlock)((Border)columnGrid.Children[0]).Child).Text;
+                    var listBox = (ListBox)columnGrid.Children[1];
+                    var column = new Column(title, (SolidColorBrush)columnGrid.Background);
+
+                    foreach (var cardItem in listBox.Items)
+                    {
+                        if (cardItem is Border card)
+                        {
+                            var cardText = ((TextBlock)card.Child).Text;
+                            var cardColor = (SolidColorBrush)card.Background;
+                            column.Cards.Add(new Card(cardText, cardColor));
+                        }
+                    }
+
+                    appState.Columns.Add(column);
+                }
+            }
+
+            // Сохраняем состояние в файл
+            appState.SaveState("appState.json");
+        }
 
         private void AddColumnButton_Click(object sender, RoutedEventArgs e)
         {
@@ -362,6 +411,7 @@ namespace FinalProject
             };
 
             contextMenu.Items.Add(renameMenuItem);
+
             contextMenu.Items.Add(deleteMenuItem);
 
             // Пункт контекстного меню для изменения цвета

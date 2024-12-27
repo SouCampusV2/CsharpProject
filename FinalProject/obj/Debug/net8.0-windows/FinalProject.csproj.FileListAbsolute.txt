@@ -18,3 +18,6 @@ C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\Fi
 C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\FinalProject\FinalProject\obj\Debug\net8.0-windows\FinalProject.pdb
 C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\FinalProject\FinalProject\obj\Debug\net8.0-windows\FinalProject.genruntimeconfig.cache
 C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\FinalProject\FinalProject\obj\Debug\net8.0-windows\ref\FinalProject.dll
+C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\FinalProject\FinalProject\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
+C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\FinalProject\FinalProject\obj\Debug\net8.0-windows\FinalProject.csproj.AssemblyReference.cache
+C:\Users\super\OneDrive\Рабочий стол\Programming\C#\FirstAssigment\FinalProject\FinalProject\obj\Debug\net8.0-windows\FinalPro.8C09D514.Up2Date
