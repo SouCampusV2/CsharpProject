@@ -230,7 +230,7 @@ namespace FinalProject
             var contextMenu = new ContextMenu();
 
             // Пункт контекстного меню для удаления карточки
-            var deleteMenuItem = new MenuItem { Header = "Удалить" };
+            var deleteMenuItem = new MenuItem { Header = "Удалить карточку" };
             deleteMenuItem.Click += (s, e) =>
             {
                 var parent = VisualTreeHelper.GetParent(card);
@@ -244,6 +244,124 @@ namespace FinalProject
                     listBox.Items.Remove(card);
                 }
             };
+
+            var renameMenuItem = new MenuItem { Header = "Переименовать карточку" };
+            renameMenuItem.Click += (s, e) =>
+            {
+                // Создаем окно с текстовым вводом для нового названия
+                var renameDialog = new Window
+                {
+                    Title = "Переименование карточки",
+                    Width = 350,
+                    Height = 200,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    ResizeMode = ResizeMode.NoResize,
+                    Background = new SolidColorBrush(Color.FromRgb(255, 245, 247)),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(255, 182, 193)),
+                    BorderThickness = new Thickness(2)
+                };
+
+                var dialogGrid = new Grid { Margin = new Thickness(10) };
+                dialogGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                dialogGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                dialogGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                var prompt = new TextBlock
+                {
+                    Text = "Введите новое название карточки:",
+                    Margin = new Thickness(0, 0, 0, 10),
+                    Foreground = new SolidColorBrush(Color.FromRgb(255, 105, 180)),
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                Grid.SetRow(prompt, 0);
+                dialogGrid.Children.Add(prompt);
+
+                var textBox = new TextBox
+                {
+                    Margin = new Thickness(0, 0, 0, 10),
+                    Padding = new Thickness(5),
+                    Background = new SolidColorBrush(Color.FromRgb(255, 245, 247)),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(255, 182, 193)),
+                    BorderThickness = new Thickness(2),
+                    Foreground = Brushes.Black,
+                    FontSize = 14,
+                   
+                };
+                textBox.Text = ((TextBlock)card.Child).Text; // Устанавливаем текущее название
+                Grid.SetRow(textBox, 1);
+                dialogGrid.Children.Add(textBox);
+
+                var buttonPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                var okButton = new Button
+                {
+                    Content = "ОК",
+                    Width = 75,
+                    Margin = new Thickness(5),
+                    Background = new LinearGradientBrush(
+                        Color.FromRgb(255, 182, 193),
+                        Color.FromRgb(255, 105, 180),
+                        90),
+                    Foreground = Brushes.White,
+                    FontWeight = FontWeights.Bold,
+                    BorderThickness = new Thickness(0),
+                    Padding = new Thickness(5),
+                    
+                };
+
+                var cancelButton = new Button
+                {
+                    Content = "Отмена",
+                    Width = 75,
+                    Margin = new Thickness(5),
+                    Background = new LinearGradientBrush(
+                        Color.FromRgb(255, 245, 247),
+                        Color.FromRgb(255, 182, 193),
+                        90),
+                    Foreground = Brushes.White,
+                    FontWeight = FontWeights.Bold,
+                    BorderThickness = new Thickness(0),
+                    Padding = new Thickness(5),
+                    
+                };
+
+                buttonPanel.Children.Add(okButton);
+                buttonPanel.Children.Add(cancelButton);
+                Grid.SetRow(buttonPanel, 2);
+                dialogGrid.Children.Add(buttonPanel);
+
+                renameDialog.Content = dialogGrid;
+
+                okButton.Click += (okSender, okArgs) =>
+                {
+                    string newName = textBox.Text.Trim();
+                    if (!string.IsNullOrEmpty(newName))
+                    {
+                        ((TextBlock)card.Child).Text = newName; // Обновляем текст карточки
+                        renameDialog.DialogResult = true;
+                        renameDialog.Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Название не может быть пустым.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                };
+
+                cancelButton.Click += (cancelSender, cancelArgs) =>
+                {
+                    renameDialog.DialogResult = false;
+                    renameDialog.Close();
+                };
+
+                renameDialog.ShowDialog();
+            };
+
+            contextMenu.Items.Add(renameMenuItem);
             contextMenu.Items.Add(deleteMenuItem);
 
             // Пункт контекстного меню для изменения цвета
