@@ -11,12 +11,11 @@ namespace FinalProject
 {
     public partial class MainWindow : Window
     {
-        private static readonly Random Random = new Random();
-
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent();  
         }
+
 
         private void AddColumnButton_Click(object sender, RoutedEventArgs e)
         {
@@ -39,17 +38,32 @@ namespace FinalProject
 
         private Grid CreateColumn(string title)
         {
-            var columnGrid = new Grid();
+            var columnGrid = new Grid
+            {
+                Margin = new Thickness(10),
+                Background = new SolidColorBrush(Color.FromRgb(255, 235, 238)),
+                
+            };
             columnGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             columnGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             columnGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            var header = new TextBlock
+            var header = new Border
             {
-                Text = title,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(5)
+                Background = new LinearGradientBrush(
+                    Color.FromRgb(255, 192, 203),
+                    Color.FromRgb(255, 182, 193),
+                    90),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(5),
+                Margin = new Thickness(5),
+                Child = new TextBlock
+                {
+                    Text = title,
+                    FontWeight = FontWeights.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Foreground = Brushes.White
+                }
             };
             Grid.SetRow(header, 0);
             columnGrid.Children.Add(header);
@@ -57,6 +71,8 @@ namespace FinalProject
             var listBox = new ListBox
             {
                 Margin = new Thickness(5),
+                Background = new SolidColorBrush(Color.FromRgb(255, 245, 247)),
+                BorderThickness = new Thickness(0),
                 AllowDrop = true
             };
             listBox.PreviewMouseMove += ListBox_PreviewMouseMove;
@@ -76,7 +92,13 @@ namespace FinalProject
             {
                 Width = 100,
                 Margin = new Thickness(5),
-                Text = "Название карточки"
+                Text = "Название карточки",
+                Foreground = Brushes.Gray,
+                Background = new SolidColorBrush(Color.FromRgb(255, 245, 247)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(255, 182, 193)),
+                BorderThickness = new Thickness(2),
+                Padding = new Thickness(5),
+                
             };
             cardNameInput.GotFocus += (s, e) =>
             {
@@ -97,6 +119,8 @@ namespace FinalProject
             bottomPanel.Children.Add(cardNameInput);
 
             var colorPicker = CreateColorPicker();
+            colorPicker.Width = 25;
+            colorPicker.Height = 25;     
             bottomPanel.Children.Add(colorPicker);
 
             var addCardButton = new Button
@@ -104,7 +128,16 @@ namespace FinalProject
                 Content = "+",
                 Width = 25,
                 Height = 25,
-                Margin = new Thickness(5)
+                Margin = new Thickness(5),
+                Background = new LinearGradientBrush(
+                    Color.FromRgb(255, 182, 193),
+                    Color.FromRgb(255, 105, 180),
+                    90),
+                BorderThickness = new Thickness(0),
+                Foreground = Brushes.White,
+                FontWeight = FontWeights.Bold,
+                FontSize = 16
+                
             };
 
             addCardButton.Click += (s, e) =>
@@ -188,12 +221,15 @@ namespace FinalProject
                 {
                     Text = text,
                     Foreground = Brushes.White,
-                    FontSize = 14
-                }
+                    FontSize = 14,
+                    TextWrapping = TextWrapping.Wrap
+                },
+                CornerRadius = new CornerRadius(10)
             };
 
             var contextMenu = new ContextMenu();
 
+            // Пункт контекстного меню для удаления карточки
             var deleteMenuItem = new MenuItem { Header = "Удалить" };
             deleteMenuItem.Click += (s, e) =>
             {
@@ -208,29 +244,30 @@ namespace FinalProject
                     listBox.Items.Remove(card);
                 }
             };
-
-            var changeColorMenuItem = new MenuItem { Header = "Изменить цвет" };
-            var colorPicker = CreateColorPicker();
-            changeColorMenuItem.Click += (s, e) =>
-            {
-                var popup = new Window
-                {
-                    Width = 150,
-                    Height = 100,
-                    Content = colorPicker,
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen
-                };
-
-                colorPicker.SelectionChanged += (cs, ce) =>
-                {
-                    card.Background = colorPicker.SelectedItem as SolidColorBrush;
-                    popup.Close();
-                };
-
-                popup.ShowDialog();
-            };
-
             contextMenu.Items.Add(deleteMenuItem);
+
+            // Пункт контекстного меню для изменения цвета
+            var changeColorMenuItem = new MenuItem { Header = "Изменить цвет" };
+
+            var colors = new Dictionary<string, SolidColorBrush>
+    {
+        { "Синий", new SolidColorBrush(Colors.LightBlue) },
+        { "Зеленый", new SolidColorBrush(Colors.LightGreen) },
+        { "Желтый", new SolidColorBrush(Colors.Yellow) },
+        { "Красный", new SolidColorBrush(Colors.LightCoral) },
+        { "Фиолетовый", new SolidColorBrush(Colors.Plum) }
+    };
+
+            foreach (var color in colors)
+            {
+                var colorItem = new MenuItem { Header = color.Key };
+                colorItem.Click += (s, e) =>
+                {
+                    card.Background = color.Value;
+                };
+                changeColorMenuItem.Items.Add(colorItem);
+            }
+
             contextMenu.Items.Add(changeColorMenuItem);
 
             card.ContextMenu = contextMenu;
@@ -240,7 +277,7 @@ namespace FinalProject
 
         private void ColumnTitleInput_GotFocus(object sender, RoutedEventArgs e)
         {
-            if (ColumnTitleInput.Text == "Введите название колонки")
+            if (ColumnTitleInput.Text == "Введите название")
             {
                 ColumnTitleInput.Text = string.Empty;
                 ColumnTitleInput.Foreground = Brushes.Black;
@@ -251,7 +288,7 @@ namespace FinalProject
         {
             if (string.IsNullOrWhiteSpace(ColumnTitleInput.Text))
             {
-                ColumnTitleInput.Text = "Введите название колонки";
+                ColumnTitleInput.Text = "Введите название";
                 ColumnTitleInput.Foreground = Brushes.Gray;
             }
         }
