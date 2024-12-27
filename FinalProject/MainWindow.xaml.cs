@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace FinalProject
 {
@@ -40,6 +42,7 @@ namespace FinalProject
             var columnGrid = new Grid();
             columnGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             columnGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            columnGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             var header = new TextBlock
             {
@@ -62,7 +65,67 @@ namespace FinalProject
             Grid.SetRow(listBox, 1);
             columnGrid.Children.Add(listBox);
 
-            // Добавляем контекстное меню для колонки
+            var bottomPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5)
+            };
+
+            var cardNameInput = new TextBox
+            {
+                Width = 100,
+                Margin = new Thickness(5),
+                Text = "Название карточки"
+            };
+            cardNameInput.GotFocus += (s, e) =>
+            {
+                if (cardNameInput.Text == "Название карточки")
+                {
+                    cardNameInput.Text = string.Empty;
+                    cardNameInput.Foreground = Brushes.Black;
+                }
+            };
+            cardNameInput.LostFocus += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(cardNameInput.Text))
+                {
+                    cardNameInput.Text = "Название карточки";
+                    cardNameInput.Foreground = Brushes.Gray;
+                }
+            };
+            bottomPanel.Children.Add(cardNameInput);
+
+            var colorPicker = CreateColorPicker();
+            bottomPanel.Children.Add(colorPicker);
+
+            var addCardButton = new Button
+            {
+                Content = "+",
+                Width = 25,
+                Height = 25,
+                Margin = new Thickness(5)
+            };
+
+            addCardButton.Click += (s, e) =>
+            {
+                string cardText = cardNameInput.Text.Trim();
+                if (string.IsNullOrEmpty(cardText) || cardText == "Название карточки")
+                {
+                    MessageBox.Show("Введите название карточки.");
+                    return;
+                }
+
+                var colorBrush = colorPicker.SelectedItem as SolidColorBrush ?? Brushes.LightBlue;
+                var card = CreateCard(cardText, colorBrush);
+                listBox.Items.Add(card);
+                cardNameInput.Clear();
+            };
+
+            bottomPanel.Children.Add(addCardButton);
+            Grid.SetRow(bottomPanel, 2);
+            columnGrid.Children.Add(bottomPanel);
+
             var contextMenu = new ContextMenu();
             var deleteColumnItem = new MenuItem { Header = "Удалить колонку" };
             deleteColumnItem.Click += (s, e) =>
@@ -71,53 +134,47 @@ namespace FinalProject
                 ColumnsGrid.ColumnDefinitions.RemoveAt(columnIndex);
                 ColumnsGrid.Children.Remove(columnGrid);
 
-                // Обновляем индексы для оставшихся колонок
                 for (int i = 0; i < ColumnsGrid.Children.Count; i++)
                 {
                     Grid.SetColumn(ColumnsGrid.Children[i], i);
                 }
             };
             contextMenu.Items.Add(deleteColumnItem);
-
             columnGrid.ContextMenu = contextMenu;
 
             return columnGrid;
         }
 
-        private void AddCardButton_Click(object sender, RoutedEventArgs e)
+        private ComboBox CreateColorPicker()
         {
-            string cardText = CardInput.Text.Trim();
-            if (string.IsNullOrEmpty(cardText))
+            var colorPicker = new ComboBox
             {
-                MessageBox.Show("Текст карточки не может быть пустым.");
-                return;
-            }
+                Width = 50,
+                Margin = new Thickness(0, 0, 10, 0),
+                ItemsSource = new[]
+                {
+                    new SolidColorBrush(Colors.LightBlue),
+                    new SolidColorBrush(Colors.LightGreen),
+                    new SolidColorBrush(Colors.Yellow),
+                    new SolidColorBrush(Colors.LightCoral),
+                    new SolidColorBrush(Colors.Plum)
+                },
+                SelectedIndex = 0
+            };
 
-            var selectedColorItem = CardColorPicker.SelectedItem as ComboBoxItem;
-            if (selectedColorItem == null)
-            {
-                MessageBox.Show("Выберите цвет для карточки.");
-                return;
-            }
+            colorPicker.ItemTemplate = CreateColorTemplate();
+            return colorPicker;
+        }
 
-            string selectedColor = selectedColorItem.Tag.ToString();
-            var color = (Color)ColorConverter.ConvertFromString(selectedColor);
-
-            var card = CreateCard(cardText, new SolidColorBrush(color));
-
-            var activeColumn = ColumnsGrid.Children.OfType<Grid>()
-                .LastOrDefault()?.Children.OfType<ListBox>().FirstOrDefault();
-
-            if (activeColumn != null)
-            {
-                activeColumn.Items.Add(card);
-            }
-            else
-            {
-                MessageBox.Show("Нет доступных колонок для добавления карточки.");
-            }
-
-            CardInput.Clear();
+        private DataTemplate CreateColorTemplate()
+        {
+            var template = new DataTemplate(typeof(SolidColorBrush));
+            var factory = new FrameworkElementFactory(typeof(Rectangle));
+            factory.SetValue(Rectangle.WidthProperty, 20.0);
+            factory.SetValue(Rectangle.HeightProperty, 20.0);
+            factory.SetBinding(Rectangle.FillProperty, new Binding("."));
+            template.VisualTree = factory;
+            return template;
         }
 
         private Border CreateCard(string text, SolidColorBrush backgroundColor)
@@ -153,11 +210,24 @@ namespace FinalProject
             };
 
             var changeColorMenuItem = new MenuItem { Header = "Изменить цвет" };
+            var colorPicker = CreateColorPicker();
             changeColorMenuItem.Click += (s, e) =>
             {
-                var colors = new[] { Colors.LightBlue, Colors.LightGreen, Colors.Yellow, Colors.LightCoral, Colors.Plum };
-                var newColor = colors[Random.Next(colors.Length)];
-                card.Background = new SolidColorBrush(newColor);
+                var popup = new Window
+                {
+                    Width = 150,
+                    Height = 100,
+                    Content = colorPicker,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                };
+
+                colorPicker.SelectionChanged += (cs, ce) =>
+                {
+                    card.Background = colorPicker.SelectedItem as SolidColorBrush;
+                    popup.Close();
+                };
+
+                popup.ShowDialog();
             };
 
             contextMenu.Items.Add(deleteMenuItem);

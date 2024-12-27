@@ -15,22 +15,11 @@
                      GotFocus="ColumnTitleInput_GotFocus" 
                      LostFocus="ColumnTitleInput_LostFocus" />
             <Button Content="Добавить колонку" Click="AddColumnButton_Click" Width="150" />
-
-            <TextBox Name="CardInput" Width="150" Margin="15,0,0,0" Text="Введите текст карточки" />
-            <ComboBox Name="CardColorPicker" Width="75" Margin="10,0,10,0">
-                <ComboBoxItem Content="Синий" Tag="LightBlue" IsSelected="True" />
-                <ComboBoxItem Content="Зеленый" Tag="LightGreen" />
-                <ComboBoxItem Content="Желтый" Tag="Yellow" />
-                <ComboBoxItem Content="Красный" Tag="LightCoral" />
-                <ComboBoxItem Content="Фиолетовый" Tag="Plum" />
-            </ComboBox>
-            <Button Content="Добавить карточку" Click="AddCardButton_Click" Width="150" />
         </StackPanel>
 
         <!-- Сетка для динамического добавления колонок -->
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Grid.Row="1">
             <Grid Name="ColumnsGrid">
-                
             </Grid>
         </ScrollViewer>
     </Grid>
